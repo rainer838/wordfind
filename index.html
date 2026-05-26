@@ -1,157 +1,190 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Gene Editing Word Search</title>
 
 <style>
-    body{
-        font-family: Arial, sans-serif;
-        background: linear-gradient(135deg,#0f172a,#1e293b);
-        color:white;
-        text-align:center;
-        margin:0;
-        padding:20px;
-    }
 
-    h1{
-        margin-bottom:10px;
-    }
+body{
+    margin:0;
+    background:#0f172a;
+    font-family:Arial;
+    color:white;
+    text-align:center;
+}
 
-    #game{
-        display:grid;
-        grid-template-columns: repeat(10,50px);
-        gap:4px;
-        justify-content:center;
-        margin:20px auto;
-        user-select:none;
-    }
+h1{
+    margin-top:20px;
+}
 
-    .cell{
-        width:50px;
-        height:50px;
-        background:#334155;
-        border-radius:10px;
-        display:flex;
-        justify-content:center;
-        align-items:center;
-        font-size:24px;
-        font-weight:bold;
-        cursor:pointer;
-        transition:0.2s;
-    }
+#grid{
+    display:grid;
+    grid-template-columns:repeat(12,45px);
+    gap:4px;
+    justify-content:center;
+    margin-top:20px;
+}
 
-    .cell.selected{
-        background:#38bdf8;
-        transform:scale(1.1);
-    }
+.cell{
+    width:45px;
+    height:45px;
+    background:#1e293b;
+    border-radius:8px;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    font-size:24px;
+    font-weight:bold;
+    cursor:pointer;
+    transition:0.2s;
+    user-select:none;
+}
 
-    .cell.found{
-        background:#22c55e;
-        animation:pop 0.4s ease;
-    }
+.cell.selected{
+    background:#38bdf8;
+    transform:scale(1.1);
+}
 
-    @keyframes pop{
-        0%{transform:scale(0.5);}
-        70%{transform:scale(1.2);}
-        100%{transform:scale(1);}
-    }
+.cell.found{
+    background:#22c55e;
+    animation:pop .3s ease;
+}
 
-    #words{
-        margin-top:20px;
-        font-size:20px;
-    }
+@keyframes pop{
+    0%{transform:scale(0.5);}
+    100%{transform:scale(1);}
+}
 
-    .done{
-        text-decoration: line-through;
-        color:#22c55e;
-    }
+#wordList{
+    margin-top:25px;
+    font-size:20px;
+}
+
+.done{
+    text-decoration:line-through;
+    color:#22c55e;
+}
+
 </style>
 </head>
+
 <body>
 
 <h1>Gene Editing Word Search</h1>
-<p>Drag your mouse across letters to find words!</p>
+<p>Drag your mouse across letters to find the hidden words!</p>
 
-<div id="game"></div>
+<div id="grid"></div>
 
-<div id="words"></div>
+<div id="wordList"></div>
 
 <script>
+
 const words = [
     "DNA",
     "RNA",
     "GENE",
     "CRISPR",
-    "MUTATION"
+    "MUTATION",
+    "GENOME"
 ];
 
-const size = 10;
+const size = 12;
 
-const grid = [
-['D','N','A','Q','W','E','R','T','Y','U'],
-['A','S','D','F','G','H','J','K','L','I'],
-['R','N','A','P','O','I','U','Y','T','R'],
-['G','E','N','E','Z','X','C','V','B','N'],
-['M','U','T','A','T','I','O','N','A','M'],
-['Q','W','E','R','T','Y','U','I','O','P'],
-['C','R','I','S','P','R','A','S','D','F'],
-['L','K','J','H','G','F','D','S','A','Q'],
-['Z','X','C','V','B','N','M','Q','W','E'],
-['P','O','I','U','Y','T','R','E','W','Q']
-];
+const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
-const game = document.getElementById("game");
-const wordsDiv = document.getElementById("words");
+const board = Array(size).fill().map(()=>Array(size).fill(""));
 
-let selectedCells = [];
-let currentWord = "";
-let isMouseDown = false;
+function placeWord(word,row,col,direction){
 
-words.forEach(word=>{
-    const span = document.createElement("span");
-    span.textContent = word + " ";
-    span.id = word;
-    span.style.margin = "10px";
-    wordsDiv.appendChild(span);
-});
+    if(direction === "horizontal"){
 
-for(let row=0; row<size; row++){
-    for(let col=0; col<size; col++){
+        for(let i=0;i<word.length;i++){
+            board[row][col+i] = word[i];
+        }
 
-        const cell = document.createElement("div");
-        cell.classList.add("cell");
-        cell.textContent = grid[row][col];
+    }else{
 
-        cell.dataset.letter = grid[row][col];
-
-        cell.addEventListener("mousedown", ()=>{
-            isMouseDown = true;
-            selectCell(cell);
-        });
-
-        cell.addEventListener("mouseenter", ()=>{
-            if(isMouseDown){
-                selectCell(cell);
-            }
-        });
-
-        game.appendChild(cell);
+        for(let i=0;i<word.length;i++){
+            board[row+i][col] = word[i];
+        }
     }
 }
 
-document.addEventListener("mouseup", ()=>{
+placeWord("DNA",0,0,"horizontal");
+placeWord("RNA",2,1,"horizontal");
+placeWord("GENE",4,3,"horizontal");
+placeWord("CRISPR",1,8,"vertical");
+placeWord("MUTATION",8,1,"horizontal");
+placeWord("GENOME",5,10,"vertical");
+
+for(let r=0;r<size;r++){
+    for(let c=0;c<size;c++){
+
+        if(board[r][c] === ""){
+
+            board[r][c] =
+            letters[Math.floor(Math.random()*letters.length)];
+        }
+    }
+}
+
+const grid = document.getElementById("grid");
+
+let selected = [];
+let currentWord = "";
+let mouseDown = false;
+
+for(let r=0;r<size;r++){
+
+    for(let c=0;c<size;c++){
+
+        const cell = document.createElement("div");
+
+        cell.classList.add("cell");
+
+        cell.textContent = board[r][c];
+
+        cell.dataset.letter = board[r][c];
+
+        cell.dataset.row = r;
+        cell.dataset.col = c;
+
+        cell.addEventListener("mousedown",()=>{
+
+            mouseDown = true;
+
+            addCell(cell);
+        });
+
+        cell.addEventListener("mouseenter",()=>{
+
+            if(mouseDown){
+
+                addCell(cell);
+            }
+        });
+
+        grid.appendChild(cell);
+    }
+}
+
+document.addEventListener("mouseup",()=>{
+
     checkWord();
+
     clearSelection();
-    isMouseDown = false;
+
+    mouseDown = false;
 });
 
-function selectCell(cell){
+function addCell(cell){
 
-    if(selectedCells.includes(cell)) return;
+    if(selected.includes(cell)) return;
 
-    selectedCells.push(cell);
+    selected.push(cell);
+
     currentWord += cell.dataset.letter;
 
     cell.classList.add("selected");
@@ -161,26 +194,49 @@ function checkWord(){
 
     if(words.includes(currentWord)){
 
-        selectedCells.forEach(cell=>{
+        selected.forEach(cell=>{
+
             cell.classList.remove("selected");
+
             cell.classList.add("found");
         });
 
-        document.getElementById(currentWord).classList.add("done");
+        document
+        .getElementById(currentWord)
+        .classList.add("done");
     }
 }
 
 function clearSelection(){
 
-    selectedCells.forEach(cell=>{
+    selected.forEach(cell=>{
+
         if(!cell.classList.contains("found")){
+
             cell.classList.remove("selected");
         }
     });
 
-    selectedCells = [];
+    selected = [];
+
     currentWord = "";
 }
+
+const wordList = document.getElementById("wordList");
+
+words.forEach(word=>{
+
+    const span = document.createElement("span");
+
+    span.innerText = word + " ";
+
+    span.id = word;
+
+    span.style.margin = "10px";
+
+    wordList.appendChild(span);
+});
+
 </script>
 
 </body>
